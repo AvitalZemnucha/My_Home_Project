@@ -1,8 +1,5 @@
-import subprocess
 import sys
 import os
-import time
-
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../utils')))
 import base64
 from pymongo import MongoClient
@@ -11,31 +8,6 @@ import requests
 from utils.constants import API_LOGIN_URL, API_CART_URL, API_CHECKOUT_URL, API_ORDERS_URL
 from database.user_queries import users_data
 
-@pytest.fixture(scope="session", autouse=True)
-def api_server():
-    proc = subprocess.Popen(
-        ["uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", "8000"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
-    )
-
-    timeout = 30
-    start = time.time()
-    health_url = "http://127.0.0.1:8000/"  # Changed from /health to /
-    while True:
-        try:
-            response = requests.get(health_url)
-            if response.status_code == 200:
-                break
-        except Exception:
-            if time.time() - start > timeout:
-                proc.terminate()
-                proc.wait()
-                raise RuntimeError("API server did not start in time!")
-            time.sleep(1)
-    yield
-    proc.terminate()
-    proc.wait()
 
 @pytest.fixture(scope="session")
 def get_user_token():
